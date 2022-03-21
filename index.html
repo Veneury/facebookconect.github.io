@@ -1,29 +1,616 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta property="og:url" content="https://www.your-domain.com/your-page.html" />
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="Your Website Title" />
-    <meta property="og:description" content="Your description" />
-    <meta property="og:image" content="https://www.your-domain.com/path/image.jpg" />
-    <title>FACEBOOK LOGIN</title>
+  <title>Climate Clippers App</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://unpkg.com/buefy/dist/buefy.min.css">
+  <script src="https://js.stripe.com/v3/"></script>
 </head>
+<style>
+  /*Jumbotron*/
+  .jumbotron {
+    background-color: transparent;
+    margin: 0;
+    padding: 10px;
+  }
+
+  .jumbotron h1 {
+    letter-spacing: 2.5px;
+    font-size: 3.5em;
+  }
+
+  .jumbotron h1,
+  .jumbotron p {
+    text-align: center;
+  }
+
+  /*map*/
+  #googleMap {
+    width: 100%;
+    height: 580px;
+  }
+
+  /*output box*/
+  #output {
+    text-align: center;
+    font-size: 2em;
+    margin: 20px auto;
+  }
+
+  #mode {
+    color: black;
+  }
+</style>
 
 <body>
-    <a href="#" onClick="publishStory();" class="sendFeed"><br><font style="color:#000; text-decoration:none;padding-left:27px;">DELETE POST to wall</font></a><br>
+  <div id="app">
+    <div>
+      <div class="container has-text-centered">
+        <h1 class="title">YOU CAN HELP US BECOME CLIMATE POSITIVE</h1>
+        <h1 class="sub-title">READY TO START?</h1>
+      </div>
+      <div class="container mt-6">
+        <div class="columns">
+          <div class="column is-12">
+            <b-steps type="is-black" v-model="activeStep" :has-navigation="false">
+              <b-step-item label="Calculate">
+                <div class="container mt-6 has-text-centered">
+                  <h1 class="sub-title">CALCULATE YOUR FOOTPRINT AND OFFSETS</h1>
+                  <p class="sub-title-step">The average carbon emitted from Honey Training Center to
+                    Crypto.com Arena is 20 Pounds.</p>
+                  <p class="sub-title-step">Calculate your trip to contribute to our goal of climate
+                    positivity. {{name}}</p>
+                </div>
+                <div class="container mt-6">
+                  <div class="columns">
+                    <div class="column is-6">
+                      <form>
+                        <b-field label="YOUR ADDRESS">
+                          <input type="text" id="to" placeholder="YOUR ADDRESS" class="input" />
+                        </b-field>
+                      </form>
+                    </div>
+                    <div class="column">
+                      <b-field label="MODE OF TRANSPORT">
+                        <b-select v-model="EmisionsCar" placeholder="MODE OF TRANSPORT" required expandedexpanded>
+                          <option value="0.75753">Passenger car</option>
+                          <option value="1.03018">Truck</option>
+                          <option value="0.42513">Motorcycle</option>
+                          <option value="0.15751">Electric vehicle</option>
+                          <option value="0.23507">Public transit rail</option>
+                          <option value="0.12078">Public transit bus</option>
+                        </b-select>
+                      </b-field>
+                    </div>
+                    <div class="column">
+                      <b-field label="FREQUENCY OF TRIPS">
+                        <b-select placeholder="FREQUENCY OF TRIPS" required v-model="frequency" expanded>
+                          <option v-for="frequency in 43" :key="frequency" :value="frequency">
+                            {{ frequency }}</option>
+                        </b-select>
+                      </b-field>
+                    </div>
+                    <div class="column">
+                      <br />
+                      <b-button type="is-dark" class="mt-1" @click="calculateNow" :disabled="frequency === 0">CALCULATE
+                        NOW</b-button>
+                    </div>
+                  </div>
+                </div>
+                <div class="container mt-6">
+                  <div class="columns">
+                    <div class="column is-8">
+                      <div v-if="millas > 0" class="info-miles"><span class="info-miles-display">Total Miles -
+                          {{millas}}</span></div>
+                      <div id="googleMap"></div>
 
-    <button type="button" id="conexion-button"> Conexion </button>
-    <button type="button" id="getconexion-button"> getConnetion </button>
-    <button type="button" id="share-button">Shared Facebook</button>
-    <button type="button" id="publish-button">Publish 18</button>
-    <fb:login-button scope="public_profile,email" onlogin="checkLoginState();">
-    </fb:login-button>
-    <div id="fb-root"></div>
-    <script async defer crossorigin="anonymous"
+                    </div>
+                    <div class="column is-4">
+                      <div style="border: 3px solid #cdcdcd !important; height:580px">
+                        <div v-show="showEnterLocation == true" class="mt-6 has-text-centered">
+                          <h1 class="title-enter-location">ENTER YOUR ADDRESS</h1>
+                          <p class="sub-title-enter-location">
+                            ENTER YOUR ADDRESS ABOVE TO CALCULATE THE CARBON EMISSIONS OF
+                            YOUR
+                            TRIP TO CRYPTO.COM ARENA THE COMPLETE THE PAYMENT FORM TO PLANT
+                            TREE TO OFFSET YOUR EMISSIONS.
+                          </p>
+                          <b-button disabled type="is-dark" class="mt-1" style="margin-top:90px !important; width: 80%;"
+                            @click="nextButtonPay()">PLANT TREES NOW</b-button>
+                        </div>
+                        <!-- Start -->
+                        <div v-show="!showEnterLocation" class="mt-6 has-text-centered">
+                          <div class="columns">
+                            <div class="column is-12">
+                              <p class="text-calculate">
+                                A TRIP FROM THE
+                                HONEY TRAINING CENTER CREATES.
+                              </p>
+                            </div>
+                          </div>
+                          <div class="column is-12">
+                            <h2 class="title-text-calculate">{{ Math.round(totalEmision) }}
+                              LBS</h2>
+                            <!-- <h2 class="title-text-calculate">MILES</h2> -->
+                          </div>
+                          <div class="column is-12">
+                            <p class="text-calculate">OF GREENHOUSE EMISSIONS.</p>
+                          </div>
+                          <div class="column is-12 m-1">
+                            <p class="text-calculate">PLANTING.</p>
+                          </div>
+                          <div class="column is-12">
+                            <h2 class="title-text-calculate">{{
+                              Math.round(Math.round(totalEmision) * 0.075756) }} TREES
+                            </h2>
+                            <!-- <h2 class="title-text-calculate">MILES</h2> -->
+                          </div>
+                          <div class="column is-12">
+                            <p class="text-calculate">WILL OFFSET THESE EMISSIONS AND CAN BE
+                              ACCOMPLISHED WITH A</p>
+                          </div>
+                          <div class="column is-12">
+                            <h2 class="title-text-calculate">${{
+                              Math.round(Math.round(totalEmision) * 0.075756) }}</h2>
+                            <!-- <h2 class="title-text-calculate">MILES</h2> -->
+                          </div>
+                          <div class="column is-12">
+                            <p class="text-calculate">
+                              CONTRIBUTION TO THE
+                              PLANET PROYECTION FUND.
+                            </p>
+                          </div>
+                          <b-button expanded type="is-dark" class="mt-1" style="margin-top:20PX !important; width: 80%;"
+                            @click="nextButtonPay()">PLANT TREES NOW</b-button>
+                        </div>
+
+                        <!-- END -->
+                      </div>
+                    </div>
+                  </div>
+                  <div class="column is-12">
+                    <div id="output"></div>
+                  </div>
+                </div>
+              </b-step-item>
+              <b-step-item label="Pay">
+                <div class="container mt-6 has-text-centered">
+                  <h1 class="sub-title">PAY FOR CARBON OFFSETS</h1>
+
+                  <div class="container mt-6">
+                    <div class="columns">
+                      <div class="column is-9">
+                        <form id="payment-form">
+                          <label for="card-element" class="card-input__label">Card</label>
+                          <div id="card-element" class="card-input__input_card">
+                            <!-- Elements will create input elements here -->
+                          </div>
+
+
+                          <div class="card-input">
+                            <label for="cardName" class="card-input__label">Email
+                              Address</label>
+                            <input id="name" type="email" id="cardName" class="card-input__input" v-model="cardName"
+                              v-on:focus="focusInput" v-on:blur="blurInput" data-ref="cardName" autocomplete="off"
+                              placeholder="EMAIL ADDRESS" />
+                            <input type="hidden" :value="activeStep" autocomplete="off" placeholder="EMAIL ADDRESS" />
+                          </div>
+                          <div class="card-input">
+                            <label for="totalPay" class="card-input__label">TOTAL AMOUNT:
+                              $XX.XX</label>
+                            <input type="text" id="amount" class="card-input__input" v-model="totalPay" :value="totalPay"
+                              v-on:focus="focusInput" v-on:blur="blurInput" data-ref="amount" autocomplete="off"
+                              placeholder="TOTAL AMOUNT: $XX.XX" />
+                          </div>
+                          <div class="column is-12">
+                            <button id="submit" class="button-dark mt-1" @click="nextButtonShared()">PLANT TREES
+                              NOW</button>
+                          </div>
+
+                        </form>
+                      </div>
+                      <div class="column is-3">
+                        <div style="border: 3px solid #cdcdcd !important; height:270px;margin-top:25PX !important; ">
+                          <div class="mt-6 has-text-centered">
+                            <div class="columns">
+                              <div class="column is-12 has-text-centered">
+                                <p class="text-calculate">
+                                  YOUR CARBON
+                                  OFFSET PURCHASE
+                                  WILL PLANT {{
+                                  Math.round(Math.round(totalEmision) *
+                                  0.075756) }}
+                                </p>
+                                <h2 class="title-text-calculate">${{
+                                  Math.round(Math.round(totalEmision) *
+                                  0.075756) }}</h2>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </b-step-item>
+              <b-step-item label="Share">
+                <div class="container mt-6 has-text-centered">
+                  <h1 class="sub-title">SPREAD THE WORD</h1>
+                  <p class="sub-title-step">
+                    THANK YOU FOR YOUR CONTRIBUTION TO THE PLANET PROYECTION FUND.
+                    YOUR CONTRIBUTION FOR
+                    <strong>${{
+                      Math.round(Math.round(totalEmision) *
+                      0.075756) }}</strong> HAS BEEN PROCESSED!
+                  </p>
+                  <p class="sub-title-step">SHARE YOUR CONTRIBUTION TO YOUR NETWORK</p>
+
+                  <div class="columns m-6">
+                    <div class="column is-4">
+                      <b-button class="button-facebook" @click="publishStory()"> Share ons Facebook </b-button>
+                    </div>
+                    <div class="column is-4">
+                      <!-- <b-button class="button-instagram">
+                        <ShareNetwork network="facebook" url="https://calculate-climate.com/"
+                                                    title="Hello! help make our planet less polluted"
+                                                    description="Hello! help make our planet less polluted"
+                                                    quote="Hello! help make our planet less polluted, clippers Climate App"
+                                                    hashtags="planet">Share on Instagram</ShareNetwork>
+                      </b-button> -->
+                    </div>
+                    <div class="column is-4">
+                      <!-- <b-button class="button-twitter">
+                        <ShareNetwork network="twitter" url="https://calculate-climate.com/"
+                                                    title="Hello! help make our planet less polluted"
+                                                    description="Hello! help make our planet less polluted"
+                                                    quote="Hello! help make our planet less polluted, clippers Climate App"
+                                                    hashtags="planet">Share on Twitter</ShareNetwork>
+                      </b-button> -->
+
+                    </div>
+                  </div>
+                </div>
+              </b-step-item>
+            </b-steps>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCF5cqWxECaotpgAyeeyaKxiUl6wlolVLY&libraries=places"></script>
+  <script src="https://unpkg.com/vue@2"></script>
+
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+  <!-- Full bundle -->
+  <script src="https://unpkg.com/buefy/dist/buefy.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/v-mask/dist/v-mask.min.js"></script>
+  <script>
+    const VueSocialSharing = require('js/vue-social-sharing/src/vue-social-sharing.js')
+    import VueSocialSharing from 'js/vue-social-sharing/src/vue-social-sharing.js'
+    Vue.use(VueSocialSharing);
+    Vue.component('SocialSharing', SocialSharing)
+
+  </script>
+
+  <script src="https://unpkg.com/buefy/dist/components/table"></script>
+  <script src="https://unpkg.com/buefy/dist/components/input"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@vue-stripe/vue-stripe"></script>
+  <script>
+    Vue.use(VueMask.VueMaskPlugin);
+    Vue.directive('mask', VueMask.VueMaskDirective);
+  </script>
+  <script>
+    new Vue({
+      el: '#app',
+      data() {
+        return {
+          name: '',
+          showEnterLocation: true,
+          totalEmision: 0,
+          EmisionsCar: 0,
+          activeStep: 0,
+          millas: 0,
+          frequency: 0,
+          KM: '',
+          replaceKi: '',
+          parseKM: 0,
+          currentCardBackground: Math.floor(Math.random() * 25 + 1),
+          cardName: '',
+          cardNumber: '',
+          cardMonth: '',
+          cardCvv: '',
+          cardYear: '',
+          minCardYear: new Date().getFullYear(),
+          amexCardMask: '#### ###### #####',
+          otherCardMask: '#### ###### #####',
+          cardNumberTemp: '',
+          isCardFlipped: false,
+          focusElementStyle: null,
+          isInputFocused: false,
+          totalPay: 0,
+          infowindow: '',
+          options: {
+            types: ['(cities)']
+          },
+        }
+      },
+
+      created() {
+        this.totalPay = this.totalEmision;
+        this.initCar();
+      },
+      methods: {
+        onChangeHandler() {
+          calculateAndDisplayRoute(directionsService, directionsDisplay);
+        },
+        nextButtonPay() {
+          this.activeStep = 1;
+          this.totalPay = Math.round(Math.round(this.totalEmision) * 0.075756);
+        },
+        async nextButtonShared() {
+          var data = await this.initCar();
+          
+          this.activeStep = 2;
+        },
+        initCar() {
+          
+         
+          document.addEventListener('DOMContentLoaded', async () => {
+            
+            var that = this;
+            // Load the publishable key from the server. The publishable key
+            // is set in your .env file.
+            const { publishableKey } = await fetch('/config').then((r) => r.json());
+            if (!publishableKey) {
+              addMessage(
+                'No publishable key returned from the server. Please check `.env` and try again'
+              );
+              alert('Please set your Stripe publishable API key in the .env file');
+            }
+
+            const stripe = Stripe(publishableKey, {
+              apiVersion: '2020-08-27',
+            });
+
+            const elements = stripe.elements();
+            const card = elements.create('card');
+            card.mount('#card-element');
+
+            // When the form is submitted...
+            const form = document.getElementById('payment-form');
+
+            let submitted = false;
+            form.addEventListener('submit', async (e) => {
+              e.preventDefault();
+
+              // Disable double submission of the form
+              if (submitted) { return; }
+              submitted = true;
+              const smountInput = document.querySelector('#amount');
+              const amountInputParse = smountInput.value + '00';
+              const amout = Number(amountInputParse);
+              form.querySelector('button').disabled = true;
+              const { error: backendError, clientSecret } = await fetch(
+                '/create-payment-intent',
+                {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    currency: 'usd',
+                    paymentMethodType: 'card',
+                    amount: amout
+                  }),
+                }
+              ).then((r) => r.json());
+
+              if (backendError) {
+
+                // reenable the form.
+                submitted = false;
+                form.querySelector('button').disabled = false;
+                return;
+              }
+
+              const nameInput = document.querySelector('#name');
+              const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(
+                clientSecret,
+                {
+                  payment_method: {
+                    card: card,
+                    amount: amout,
+                    billing_details: {
+                      name: nameInput.value
+                    },
+                  },
+                }
+              );
+
+
+              if (stripeError) {
+
+                submitted = false;
+                form.querySelector('button').disabled = false;
+                return;
+              }
+            });
+          });
+        },
+        publishStory() {
+            FB.ui({
+            display: 'popup',
+            method: 'feed',
+            link: 'https://veneury.github.io/facebookconect.github.io/',
+            name: 'Climate App',
+            caption: 'Climate App',
+            description: 'Climate App'
+      },
+  function(response) {
+    console.log('publishStory response: ', response);
+  });
+  return false;
+},
+        calculateNow() {
+          this.calcRoute();
+          this.showEnterLocation = false;
+        },
+
+        calcRoute() {
+          let that = this;
+          var request = {
+            origin: 'Crypto.com Arena, 1111 S Figueroa St, Los Angeles, CA 90015, Estados Unidos',
+            destination: document.getElementById("to").value,
+            travelMode: google.maps.TravelMode.DRIVING, //WALKING, BYCYCLING, TRANSIT
+            unitSystem: google.maps.UnitSystem.IMPERIAL
+          }
+
+          directionsService.route(request, function (result, status) {
+            if (status == google.maps.DirectionsStatus.OK) {
+              let KM = '';
+              let replaceKi = '';
+              let parseKM = 0;
+              KM = result.routes[0].legs[0].distance.text;
+              replaceKi = KM.replace('mi', '').replace(',', '.')
+              parseKM = Number(replaceKi);
+              that.showEnterLocation = false;
+              that.millas = (Math.round(parseKM));
+              that.millas = (Math.round(that.millas) * 2)
+              that.totalEmision = (Number(that.EmisionsCar) * Number(that.millas)) * Number(that.frequency);
+              const output = document.querySelector('#output');
+              output.innerHTML = "<div class='alert-info'>From: " + 'Crypto.com Arena, 1111 S Figueroa St, Los Angeles, CA 90015, Estados Unidos' + ".<br />To: " + document.getElementById("to").value + ".<br /> Driving distance <i class='fas fa-road'></i> : " + result.routes[0].legs[0].distance.text + ".<br />Duration <i class='fas fa-hourglass-start'></i> : " + result.routes[0].legs[0].duration.text + ".</div>";
+              directionsDisplay.setDirections(result);
+            } else {
+              directionsDisplay.setDirections({ routes: [] });
+              map.setCenter(myLatLng);
+              output.innerHTML = "<div class='alert-danger'><i class='fas fa-exclamation-triangle'></i> Could not retrieve driving distance.</div>";
+            }
+          });
+
+        },
+        flipCard(status) {
+          let that = this;
+          that.isCardFlipped = status;
+        },
+        focusInput(e) {
+          let that = this;
+          that.isInputFocused = true;
+          let targetRef = e.target.dataset.ref;
+          let target = targetRef;
+          that.focusElementStyle = {
+            width: `${target.offsetWidth}px`,
+            height: `${target.offsetHeight}px`,
+            transform: `translateX(${target.offsetLeft}px) translateY(${target.offsetTop}px)`
+          }
+        },
+        blurInput(e) {
+          let vm = this;
+          setTimeout(() => {
+            if (!vm.isInputFocused) {
+              vm.focusElementStyle = null;
+            }
+          }, 300);
+          vm.isInputFocused = false;
+        },
+      },
+      watch: {
+        cardYear(cardYear, prevCount) {
+          let that = this;
+          if (that.cardMonth < that.minCardMonth) {
+            that.cardMonth = "";
+          }
+        },
+        totalPay(totalPay, oldtotalPay) {
+          let that = this;
+          that.totalPay = totalPay;
+        },
+      },
+      computed: {
+        aDouble() {
+          return this.a * 2
+        },
+        getCardType() {
+          let that = this;
+          let number = that.cardNumber;
+          let re = new RegExp("^4");
+          if (number.match(re) != null) return "visa";
+          re = new RegExp("^(34|37)");
+          if (number.match(re) != null) return "amex";
+          re = new RegExp("^5[1-5]");
+          if (number.match(re) != null) return "mastercard";
+          re = new RegExp("^6011");
+          if (number.match(re) != null) return "discover";
+          return "visa";
+        },
+        generateCardNumberMask() {
+          let that = this;
+          return that.getCardType === "amex" ? that.amexCardMask : that.otherCardMask;
+        },
+        minCardMonth() {
+          let that = this;
+          if (that.cardYear == that.minCardYear) return new Date().getMonth() + 1;
+          return 1;
+        }
+      }
+    })
+  </script>
+
+  <!-- START Google Maps Integration -->
+  <script>
+    var myLatLng = { lat: 34.0430175, lng: -118.2694428 };
+    var mapOptions = {
+      center: myLatLng,
+      zoom: 15,
+      mapTypeId: google.maps.MapTypeId.ROADMAP
+
+    };
+    var map = new google.maps.Map(document.getElementById('googleMap'), mapOptions);
+    var directionsService = new google.maps.DirectionsService();
+    var directionsDisplay = new google.maps.DirectionsRenderer();
+    directionsDisplay.setMap(map);
+    var options = {
+      types: ['(cities)']
+    }
+
+    var input1 = document.getElementById("from");
+    var autocomplete1 = new google.maps.places.Autocomplete(input1, options);
+
+    var input2 = document.getElementById("to");
+    var autocomplete2 = new google.maps.places.Autocomplete(input2, options);
+  </script>
+  <!-- END Google Maps Integration -->
+
+
+  <script>
+// Helper for displaying status messages.
+const addMessage = (message) => {
+  const messagesDiv = document.querySelector('#messages');
+  messagesDiv.style.display = 'block';
+  const messageWithLinks = addDashboardLinks(message);
+  messagesDiv.innerHTML += `> ${messageWithLinks}<br>`;
+};
+
+// Adds links for known Stripe objects to the Stripe dashboard.
+const addDashboardLinks = (message) => {
+  const piDashboardBase = 'https://dashboard.stripe.com/test/payments';
+  return message.replace(
+    /(pi_(\S*)\b)/g,
+    `<a href="${piDashboardBase}/$1" target="_blank">$1</a>`
+  );
+};
+
+
+  </script>
+
+  <!-- Facebook integrated --> 
+  <script async defer crossorigin="anonymous"
         src="https://connect.facebook.net/es_LA/sdk.js#xfbml=1&version=v13.0&appId=993599697939474&autoLogAppEvents=1"
         nonce="ktv8AxRj"></script>
     <script>
@@ -118,21 +705,952 @@ function statusChangeCallback(response){
             });
         })
 
-        function publishStory() {
-  FB.ui({
-    display: 'popup',
-    method: 'feed',
-    link: 'https://veneury.github.io/facebookconect.github.io/',
-    name: 'Probando contenido',
-    caption: 'S sssssssssssssssss',
-    description: 'description goes here SDASDASDASDASD ceboo'
-  }, 
-  function(response) {
-    console.log('publishStory response: ', response);
-  });
-  return false;
-}
+       
     </script>
+  <style lang="css" scoped>
+    .button-dark {
+      font-family: "Agency fb";
+      font-weight: bold;
+      font-size: 18px;
+      background-color: #cdcdcd;
+      border-color: transparent;
+      color: #fff;
+      margin-top: 20px !important;
+      width: 80%;
+
+    }
+    .alert-info{
+      text-align: justify;
+      text-decoration: none;
+      font-family: "Agency fb";
+      font-weight: bold;
+      color: #7b7b7b;
+      font-size: 20px;
+      margin: 0 5px;
+    }
+
+    .button-dark.is-hovered,
+    .button-dark:hover {
+      background-color: #2f2f2f;
+      border-color: transparent;
+      color: #fff;
+      margin-top: 20px !important;
+      width: 80%;
+    }
+
+    .info-miles {
+      height: 40px;
+      width: 130px;
+      margin: 35% 10%;
+      background-color: #262626;
+      opacity: 0.5;
+      filter: alpha(opacity=50);
+      border-radius: 2px solid #262626;
+      position: absolute;
+      z-index: 9999;
+    }
+
+    .step-navigation {
+      display: none !important;
+    }
+
+    .inputbutton {
+      background: #3b5998;
+      color: white;
+      padding: 2px 18px 3px 18px;
+      border-top: 1px white solid;
+      border-left: 1px white solid;
+      border-right: 1px #000033 solid;
+      border-bottom: 1px #000033 solid;
+    }
+
+    .google-maps-climate {
+      width: 400px;
+      height: 450px;
+      position: absolute;
+
+    }
+
+    .border-facebook {
+      width: 100px;
+      background-color: #0f72cc;
+      height: 100px;
+      border-radius: 100%;
+    }
+
+    .border-instagram {
+      width: 100px;
+      background-color: #b52fb1;
+      height: 100px;
+      border-radius: 100%;
+    }
+
+    .border-twitter {
+      width: 100px;
+      background-color: #1c96e8;
+      height: 100px;
+      border-radius: 100%;
+    }
+
+    .text-networks {
+      color: #fff;
+      font-family: "Agency fb";
+      font-weight: bold;
+    }
+
+    .title {
+      text-decoration: none;
+      font-family: "Agency fb";
+      font-weight: bold;
+      color: #7b7b7b;
+      font-size: 25px;
+      margin: 0 5px;
+    }
+
+    .sub-title {
+      text-decoration: none;
+      font-family: "Agency fb";
+      font-weight: bold;
+      color: #7b7b7b;
+      font-size: 35px;
+      margin: 0 5px;
+    }
+
+    .sub-title-step {
+      font-weight: bold;
+      color: #7b7b7b;
+      font-size: 18px;
+      margin: 0 5px;
+    }
+
+    .title-enter-location {
+      font-family: "Agency fb";
+      font-weight: bold;
+      color: #7b7b7b;
+      font-size: 25px;
+      margin: 0 5px;
+    }
+
+    .sub-title-enter-location {
+      font-family: "Agency fb";
+      font-weight: bold;
+      color: #7b7b7b;
+      font-size: 20px;
+    }
+
+    .info-miles-display {
+      font-family: "Agency fb";
+      font-weight: bold;
+      color: #fff;
+      font-size: 20px;
+    }
+
+    .title-text-calculate {
+      font-family: "Agency fb";
+      font-weight: bold;
+      color: #7b7b7b;
+      font-size: 30px;
+    }
+
+    .equals {
+      font-family: "Agency fb";
+      font-weight: bold;
+      color: #7b7b7b;
+      font-size: 30px;
+      margin-top: 10%;
+    }
+
+    .text-calculate {
+      font-weight: bold;
+      color: #7b7b7b;
+      font-size: 13px;
+    }
+
+    .text-calculate-money {
+      font-family: "Agency fb";
+      font-weight: bold;
+      color: #7b7b7b;
+      font-size: 35px;
+      margin: 0 5px;
+    }
+
+    .vue-form-wizard .navbar .navbar-nav>li>a.wizard-btn,
+    .vue-form-wizard .wizard-btn {
+      background-color: #cdcdcd !important;
+      color: #ffffff !important;
+    }
+
+    .vue-form-wizard .wizard-icon-circle .md .checked {
+      background-color: #cdcdcd !important;
+    }
+
+    .vue-form-wizard .wizard-icon-circle {
+      font-size: 18px;
+      border: 3px solid #cdcdcd !important;
+      border-radius: 50%;
+      font-weight: 600;
+      width: 70px;
+      height: 70px;
+      background-color: #fff;
+      position: relative;
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -webkit-box-pack: center;
+      -ms-flex-pack: center;
+      justify-content: center;
+      -ms-flex-line-pack: center;
+      align-content: center;
+    }
+
+    .button.is-dark {
+      font-family: "Agency fb";
+      font-weight: "bold";
+      font-size: 18px;
+      background-color: #cdcdcd;
+      border-color: transparent;
+      color: #fff;
+    }
+
+    .vue-form-wizard .wizard-icon-circle .wizard-icon-container {
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -webkit-box-pack: center;
+      -ms-flex-pack: center;
+      justify-content: center;
+      -webkit-box-flex: 1;
+      -ms-flex: 1;
+      flex: 1;
+      border-radius: 40%;
+      background: #cdcdcd !important;
+    }
+
+    .vue-form-wizard .wizard-navigation .wizard-progress-with-circle .wizard-progress-bar {
+      background-color: #cdcdcd !important;
+      color: #cdcdcd !important;
+      width: 50%;
+      -webkit-box-shadow: none;
+      box-shadow: none;
+      -webkit-transition: width 0.3s ease;
+      transition: width 0.3s ease;
+    }
+
+    .vue-form-wizard .navbar .navbar-nav>li>a.wizard-btn,
+    .vue-form-wizard .wizard-btn {
+      -webkit-box-sizing: border-box;
+      box-sizing: border-box;
+      border-width: 2px;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 6px 12px;
+      min-width: 140px;
+      background: #cdcdcd !important;
+    }
+
+    .vue-form-wizard .navbar .navbar-nav>li>a.wizard-btn,
+    .vue-form-wizard .wizard-btn {
+      -webkit-box-sizing: border-box;
+      box-sizing: border-box;
+      border-width: 2px;
+      background-color: transparent;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 6px 12px;
+      min-width: 140px;
+      background-color: #cdcdcd !important;
+      border-color: rgb(231, 76, 60);
+      color: white;
+    }
+
+    .wrapper {
+      display: flex;
+      margin-bottom: 50px;
+    }
+
+    @media screen and (max-width: 700px),
+    (max-height: 500px) {
+      .wrapper {
+        flex-wrap: wrap;
+        flex-direction: column;
+      }
+    }
+
+    .card-form {
+      max-width: 570px;
+      margin: auto;
+      width: 100%;
+    }
+
+    @media screen and (max-width: 576px) {
+      .card-form {
+        margin: 0 auto;
+      }
+    }
+
+    .card-form__inner {
+      background: #fff;
+      box-shadow: 0 30px 60px 0 rgba(90, 116, 148, 0.4);
+      border-radius: 10px;
+      padding: 35px;
+      padding-top: 180px;
+    }
+
+    @media screen and (max-width: 480px) {
+      .card-form__inner {
+        padding: 25px;
+        padding-top: 165px;
+      }
+    }
+
+    @media screen and (max-width: 360px) {
+      .card-form__inner {
+        padding: 15px;
+        padding-top: 165px;
+      }
+    }
+
+    .card-form__row {
+      display: flex;
+      align-items: flex-start;
+    }
+
+    @media screen and (max-width: 480px) {
+      .card-form__row {
+        flex-wrap: wrap;
+      }
+    }
+
+    .card-form__col {
+      flex: auto;
+      margin-right: 35px;
+    }
+
+    .card-form__col:last-child {
+      margin-right: 0;
+    }
+
+    @media screen and (max-width: 480px) {
+      .card-form__col {
+        margin-right: 0;
+        flex: unset;
+        width: 100%;
+        margin-bottom: 20px;
+      }
+
+      .card-form__col:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    .card-form__col.-cvv {
+      max-width: 150px;
+    }
+
+    @media screen and (max-width: 480px) {
+      .card-form__col.-cvv {
+        max-width: initial;
+      }
+    }
+
+    .card-form__group {
+      display: flex;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .card-form__group .card-input__input {
+      flex: 1;
+      margin-right: 15px;
+    }
+
+    .card-form__group .card-input__input:last-child {
+      margin-right: 0;
+    }
+
+    .card-form__button {
+      width: 100%;
+      height: 55px;
+      background: #2364d2;
+      border: none;
+      border-radius: 5px;
+      font-size: 22px;
+      font-weight: 500;
+      font-family: "Agency fb", sans-serif;
+      box-shadow: 3px 10px 20px 0px rgba(35, 100, 210, 0.3);
+      color: #fff;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+
+    @media screen and (max-width: 480px) {
+      .card-form__button {
+        margin-top: 10px;
+      }
+    }
+
+    .card-item {
+      max-width: 430px;
+      height: 270px;
+      margin-left: auto;
+      margin-right: auto;
+      position: relative;
+      z-index: 2;
+      width: 100%;
+    }
+
+    @media screen and (max-width: 480px) {
+      .card-item {
+        max-width: 310px;
+        height: 220px;
+        width: 90%;
+      }
+    }
+
+    @media screen and (max-width: 360px) {
+      .card-item {
+        height: 180px;
+      }
+    }
+
+    .card-item.-active .card-item__side.-front {
+      transform: perspective(1000px) rotateY(180deg) rotateX(0deg) rotateZ(0deg);
+    }
+
+    .card-item.-active .card-item__side.-back {
+      transform: perspective(1000px) rotateY(0) rotateX(0deg) rotateZ(0deg);
+    }
+
+    .card-item__focus {
+      position: absolute;
+      z-index: 3;
+      border-radius: 5px;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      transition: all 0.35s cubic-bezier(0.71, 0.03, 0.56, 0.85);
+      opacity: 0;
+      pointer-events: none;
+      overflow: hidden;
+      border: 2px solid rgba(255, 255, 255, 0.65);
+    }
+
+    .card-item__focus:after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: #08142f;
+      height: 100%;
+      border-radius: 5px;
+      filter: blur(25px);
+      opacity: 0.5;
+    }
+
+    .card-item__focus.-active {
+      opacity: 1;
+    }
+
+    .card-item__side {
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px 0 rgba(14, 42, 90, 0.55);
+      transform: perspective(2000px) rotateY(0deg) rotateX(0deg) rotate(0deg);
+      transform-style: preserve-3d;
+      transition: all 0.8s cubic-bezier(0.71, 0.03, 0.56, 0.85);
+      backface-visibility: hidden;
+      height: 100%;
+    }
+
+    .card-item__side.-back {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      transform: perspective(2000px) rotateY(-180deg) rotateX(0deg) rotate(0deg);
+      z-index: 2;
+      padding: 0;
+      height: 100%;
+    }
+
+    .card-item__side.-back .card-item__cover {
+      transform: rotateY(-180deg);
+    }
+
+    .card-item__bg {
+      max-width: 100%;
+      display: block;
+      max-height: 100%;
+      height: 100%;
+      width: 100%;
+      object-fit: cover;
+    }
+
+    .card-item__cover {
+      height: 100%;
+      background-color: #1c1d27;
+      position: absolute;
+      height: 100%;
+      background-color: #1c1d27;
+      left: 0;
+      top: 0;
+      width: 100%;
+      border-radius: 15px;
+      overflow: hidden;
+    }
+
+    .card-item__cover:after {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(6, 2, 29, 0.45);
+    }
+
+    .card-item__top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 40px;
+      padding: 0 10px;
+    }
+
+    @media screen and (max-width: 480px) {
+      .card-item__top {
+        margin-bottom: 25px;
+      }
+    }
+
+    @media screen and (max-width: 360px) {
+      .card-item__top {
+        margin-bottom: 15px;
+      }
+    }
+
+    .card-item__chip {
+      width: 60px;
+    }
+
+    @media screen and (max-width: 480px) {
+      .card-item__chip {
+        width: 50px;
+      }
+    }
+
+    @media screen and (max-width: 360px) {
+      .card-item__chip {
+        width: 40px;
+      }
+    }
+
+    .card-item__type {
+      height: 45px;
+      position: relative;
+      display: flex;
+      justify-content: flex-end;
+      max-width: 100px;
+      margin-left: auto;
+      width: 100%;
+    }
+
+    @media screen and (max-width: 480px) {
+      .card-item__type {
+        height: 40px;
+        max-width: 90px;
+      }
+    }
+
+    @media screen and (max-width: 360px) {
+      .card-item__type {
+        height: 30px;
+      }
+    }
+
+    .card-item__typeImg {
+      max-width: 100%;
+      object-fit: contain;
+      max-height: 100%;
+      object-position: top right;
+    }
+
+    .card-item__info {
+      color: #fff;
+      width: 100%;
+      max-width: calc(100% - 85px);
+      padding: 10px 15px;
+      font-weight: 500;
+      display: block;
+      cursor: pointer;
+    }
+
+    @media screen and (max-width: 480px) {
+      .card-item__info {
+        padding: 10px;
+      }
+    }
+
+    .card-item__holder {
+      opacity: 0.7;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
+    @media screen and (max-width: 480px) {
+      .card-item__holder {
+        font-size: 12px;
+        margin-bottom: 5px;
+      }
+    }
+
+    .card-item__wrapper {
+      font-family: "Agency fb", monospace;
+      padding: 25px 15px;
+      position: relative;
+      z-index: 4;
+      height: 100%;
+      text-shadow: 7px 6px 10px rgba(14, 42, 90, 0.8);
+      user-select: none;
+    }
+
+    @media screen and (max-width: 480px) {
+      .card-item__wrapper {
+        padding: 20px 10px;
+      }
+    }
+
+    .card-item__name {
+      font-size: 18px;
+      line-height: 1;
+      white-space: nowrap;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-transform: uppercase;
+    }
+
+    @media screen and (max-width: 480px) {
+      .card-item__name {
+        font-size: 16px;
+      }
+    }
+
+    .card-item__nameItem {
+      display: inline-block;
+      min-width: 8px;
+      position: relative;
+    }
+
+    .card-item__number {
+      font-weight: 500;
+      line-height: 1;
+      color: #fff;
+      font-size: 27px;
+      margin-bottom: 35px;
+      display: inline-block;
+      padding: 10px 15px;
+      cursor: pointer;
+    }
+
+    @media screen and (max-width: 480px) {
+      .card-item__number {
+        font-size: 21px;
+        margin-bottom: 15px;
+        padding: 10px 10px;
+      }
+    }
+
+    @media screen and (max-width: 360px) {
+      .card-item__number {
+        font-size: 19px;
+        margin-bottom: 10px;
+        padding: 10px 10px;
+      }
+    }
+
+    .card-item__numberItem {
+      width: 16px;
+      display: inline-block;
+    }
+
+    .card-item__numberItem.-active {
+      width: 30px;
+    }
+
+    @media screen and (max-width: 480px) {
+      .card-item__numberItem {
+        width: 13px;
+      }
+
+      .card-item__numberItem.-active {
+        width: 16px;
+      }
+    }
+
+    @media screen and (max-width: 360px) {
+      .card-item__numberItem {
+        width: 12px;
+      }
+
+      .card-item__numberItem.-active {
+        width: 8px;
+      }
+    }
+
+    .card-item__content {
+      color: #fff;
+      display: flex;
+      align-items: flex-start;
+    }
+
+    .card-item__date {
+      flex-wrap: wrap;
+      font-size: 18px;
+      margin-left: auto;
+      padding: 10px;
+      display: inline-flex;
+      width: 80px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    @media screen and (max-width: 480px) {
+      .card-item__date {
+        font-size: 16px;
+      }
+    }
+
+    .card-item__dateItem {
+      position: relative;
+    }
+
+    .card-item__dateItem span {
+      width: 22px;
+      display: inline-block;
+    }
+
+    .card-item__dateTitle {
+      opacity: 0.7;
+      font-size: 13px;
+      padding-bottom: 6px;
+      width: 100%;
+    }
+
+    @media screen and (max-width: 480px) {
+      .card-item__dateTitle {
+        font-size: 12px;
+        padding-bottom: 5px;
+      }
+    }
+
+    .card-item__band {
+      background: rgba(0, 0, 19, 0.8);
+      width: 100%;
+      height: 50px;
+      margin-top: 30px;
+      position: relative;
+      z-index: 2;
+    }
+
+    @media screen and (max-width: 480px) {
+      .card-item__band {
+        margin-top: 20px;
+      }
+    }
+
+    @media screen and (max-width: 360px) {
+      .card-item__band {
+        height: 40px;
+        margin-top: 10px;
+      }
+    }
+
+    .card-item__cvv {
+      text-align: right;
+      position: relative;
+      z-index: 2;
+      padding: 15px;
+    }
+
+    .card-item__cvv .card-item__type {
+      opacity: 0.7;
+    }
+
+    @media screen and (max-width: 360px) {
+      .card-item__cvv {
+        padding: 10px 15px;
+      }
+    }
+
+    .card-item__cvvTitle {
+      padding-right: 10px;
+      font-size: 15px;
+      font-weight: 500;
+      color: #fff;
+      margin-bottom: 5px;
+    }
+
+    .card-item__cvvBand {
+      height: 45px;
+      background: #fff;
+      margin-bottom: 30px;
+      text-align: right;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 10px;
+      color: #1a3b5d;
+      font-size: 18px;
+      border-radius: 4px;
+      box-shadow: 0px 10px 20px -7px rgba(32, 56, 117, 0.35);
+    }
+
+    @media screen and (max-width: 480px) {
+      .card-item__cvvBand {
+        height: 40px;
+        margin-bottom: 20px;
+      }
+    }
+
+    @media screen and (max-width: 360px) {
+      .card-item__cvvBand {
+        margin-bottom: 15px;
+      }
+    }
+
+    .card-list {
+      margin-bottom: -130px;
+    }
+
+    @media screen and (max-width: 480px) {
+      .card-list {
+        margin-bottom: -120px;
+      }
+    }
+
+    .card-input {
+      margin-bottom: 20px;
+    }
+
+    .card-input__label {
+      font-size: 14px;
+      margin-bottom: 5px;
+      font-weight: 500;
+      color: #1a3b5d;
+      width: 100%;
+      display: block;
+      user-select: none;
+      font-family: "Agency fb", sans-serif;
+    }
+
+    .card-input__input {
+      width: 100%;
+      height: 50px;
+      border-radius: 5px;
+      box-shadow: none;
+      border: 1px solid #ced6e0;
+      transition: all 0.3s ease-in-out;
+      font-size: 18px;
+      padding: 5px 15px;
+      background: none;
+      color: #1a3b5d;
+      font-family: "Agency fb", sans-serif;
+    }
+
+    .card-input__input_card {
+      width: 100%;
+      height: 42px;
+      border-radius: 5px;
+      box-shadow: none;
+      border: 1px solid #ced6e0;
+      transition: all 0.3s ease-in-out;
+      font-size: 18px;
+      padding: 5px 15px;
+      background: none;
+      color: #1a3b5d;
+      font-family: "Agency fb", sans-serif;
+    }
+
+    .ElementsApp input {
+      background-color: transparent;
+      border: none;
+      display: block;
+      font-family: "Agency fb", sans-serif;
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      font-size: 18px;
+      line-height: 1.2em;
+      height: 1.2em;
+    }
+
+    .card-input__input:hover,
+    .card-input__input:focus {
+      border-color: #3d9cff;
+    }
+
+    .card-input__input:focus {
+      box-shadow: 0px 10px 20px -13px rgba(32, 56, 117, 0.35);
+    }
+
+    .card-input__input.-select {
+      -webkit-appearance: none;
+      background-size: 12px;
+      background-position: 90% center;
+      background-repeat: no-repeat;
+      padding-right: 30px;
+    }
+
+    .slide-fade-up-enter-active {
+      transition: all 0.25s ease-in-out;
+      transition-delay: 0.1s;
+      position: relative;
+    }
+
+    .slide-fade-up-leave-active {
+      transition: all 0.25s ease-in-out;
+      position: absolute;
+    }
+
+    .slide-fade-up-enter {
+      opacity: 0;
+      transform: translateY(15px);
+      pointer-events: none;
+    }
+
+    .slide-fade-up-leave-to {
+      opacity: 0;
+      transform: translateY(-15px);
+      pointer-events: none;
+    }
+
+    .slide-fade-right-enter-active {
+      transition: all 0.25s ease-in-out;
+      transition-delay: 0.1s;
+      position: relative;
+    }
+
+    .slide-fade-right-leave-active {
+      transition: all 0.25s ease-in-out;
+      position: absolute;
+    }
+
+    .slide-fade-right-enter {
+      opacity: 0;
+      transform: translateX(10px) rotate(45deg);
+      pointer-events: none;
+    }
+
+    .slide-fade-right-leave-to {
+      opacity: 0;
+      transform: translateX(-10px) rotate(45deg);
+      pointer-events: none;
+    }
+  </style>
 </body>
 
 </html>
