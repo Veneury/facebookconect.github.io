@@ -14,8 +14,8 @@
 </head>
 
 <body>
-    <button click="Connection()"> Conexion </button>
-    <button click="getConnetion()"> getConnetion </button>
+    <button type="button" id="conexion-button"> Conexion </button>
+    <button type="button" id="getconexion-button"> getConnetion </button>
     <button type="button" id="share-button">Shared Facebook</button>
     <fb:login-button scope="public_profile,email" onlogin="checkLoginState();">
     </fb:login-button>
@@ -63,6 +63,18 @@
             }, function (respose) {
                 console.log(respose);
             })
+        })
+
+        document.getElementById('getconexion-button').addEventListener('click', function () {
+            FB.getLoginStatus(function (response) {
+                statusChangeCallback(response);
+            });
+        })
+
+        document.getElementById('conexion-button').addEventListener('click', function () {
+            FB.getLoginStatus(function (response) {
+                statusChangeCallback(response);
+            });
         })
     </script>
 </body>
