@@ -17,7 +17,7 @@
     <button type="button" id="conexion-button"> Conexion </button>
     <button type="button" id="getconexion-button"> getConnetion </button>
     <button type="button" id="share-button">Shared Facebook</button>
-    <button type="button" id="publish-button">Publish</button>
+    <button type="button" id="publish-button">Publish ss</button>
     <fb:login-button scope="public_profile,email" onlogin="checkLoginState();">
     </fb:login-button>
     <div id="fb-root"></div>
@@ -35,11 +35,11 @@ function statusChangeCallback(response){
     if(response.status == 'connected'){
         alert('Conectado');
         FB.api('/me', function(response){
-            console.log('SuccessFul login for' + respose.name);
+            console.log('SuccessFul login for' + response.name);
         })
     }else {
-        FB.login(function (respose){
-            console.log(respose)
+        FB.login(function (response){
+            console.log(response)
         },{
             scope:'email',
             return_scopes: true 
