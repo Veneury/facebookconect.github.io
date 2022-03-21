@@ -14,10 +14,12 @@
 </head>
 
 <body>
+    <a href="#" onClick="publishStory();" class="sendFeed"><br><font style="color:#FFF; text-decoration:none;padding-left:27px;">post to wall</font></a><br>
+
     <button type="button" id="conexion-button"> Conexion </button>
     <button type="button" id="getconexion-button"> getConnetion </button>
     <button type="button" id="share-button">Shared Facebook</button>
-    <button type="button" id="publish-button">Publish 18ss</button>
+    <button type="button" id="publish-button">Publish 18</button>
     <fb:login-button scope="public_profile,email" onlogin="checkLoginState();">
     </fb:login-button>
     <div id="fb-root"></div>
@@ -114,6 +116,21 @@ function statusChangeCallback(response){
                 
             });
         })
+
+        function publishStory() {
+  FB.ui({
+    method: 'feed',
+    name: 'message name',
+    caption: 'message caption ',
+    description: 'description goes here',
+    link: 'the url current page',
+    picture: 'https://tpc.googlesyndication.com/simgad/15370925399314456202'
+  }, 
+  function(response) {
+    console.log('publishStory response: ', response);
+  });
+  return false;
+}
     </script>
 </body>
 
