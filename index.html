@@ -17,7 +17,7 @@
     <button type="button" id="conexion-button"> Conexion </button>
     <button type="button" id="getconexion-button"> getConnetion </button>
     <button type="button" id="share-button">Shared Facebook</button>
-    <button type="button" id="share-button">HORA</button>
+    <button type="button" id="publish-button">Publish</button>
     <fb:login-button scope="public_profile,email" onlogin="checkLoginState();">
     </fb:login-button>
     <div id="fb-root"></div>
@@ -84,8 +84,8 @@ function statusChangeCallback(response){
             FB.ui({
                 method: 'share',
                 href: 'https://veneury.github.io/facebookconect.github.io/'
-            }, function (respose) {
-                console.log(respose);
+            }, function (response) {
+                console.log(response);
             })
         })
 
@@ -98,6 +98,21 @@ function statusChangeCallback(response){
         document.getElementById('conexion-button').addEventListener('click', function () {
             FB.getLoginStatus(function (response) {
                 statusChangeCallback(response);
+            });
+        })
+        document.getElementById('publish-button').addEventListener('click', function () {
+            FB.getLoginStatus(function (response) {
+                var responde = statusChangeCallback(response);
+                if(responde != null){
+                    var body = 'Reading JS SDK documentation';
+                    FB.api('/me/feed', 'post', { message: body }, function(response) {
+                    if (!response || response.error) {
+                        alert('Error occured');
+                    } else {
+                        alert('Post ID: ' + response.id);
+                    }
+                    });
+                }
             });
         })
     </script>
