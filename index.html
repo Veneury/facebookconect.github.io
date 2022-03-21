@@ -1,137 +1,44 @@
+
 <!DOCTYPE html>
-<html lang="en">
+    <html xmlns:fb="http://www.facebook.com/2008/fbml">
+    <head>
+    </head>
+    <body>
 
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta property="og:url" content="https://www.your-domain.com/your-page.html" />
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="Your Website Title" />
-    <meta property="og:description" content="Your description" />
-    <meta property="og:image" content="https://www.your-domain.com/path/image.jpg" />
-    <title>FACEBOOK LOGIN</title>
-</head>
+    <a href="#" onClick="postToFacebook()">Post to Facebook</a>
 
-<body>
-    <a href="#" onClick="publishStory();" class="sendFeed"><br><font style="color:#FFF; text-decoration:none;padding-left:27px;">post to wall</font></a><br>
-
-    <button type="button" id="conexion-button"> Conexion </button>
-    <button type="button" id="getconexion-button"> getConnetion </button>
-    <button type="button" id="share-button">Shared Facebook</button>
-    <button type="button" id="publish-button">Publish 18</button>
-    <fb:login-button scope="public_profile,email" onlogin="checkLoginState();">
-    </fb:login-button>
-    <div id="fb-root"></div>
-    <script async defer crossorigin="anonymous"
-        src="https://connect.facebook.net/es_LA/sdk.js#xfbml=1&version=v13.0&appId=993599697939474&autoLogAppEvents=1"
-        nonce="ktv8AxRj"></script>
     <script>
+    function postToFacebook() {
+        var body = 'Reading Connect JS documentation';
 
-
-
-function statusChangeCallback(response){
-    console.log('Running StatusChange');
-    console.log(response,'Running StatusChange');
-
-    if(response.status == 'connected'){
-        alert('Conectado');
-        FB.api('/me', function(response){
-            console.log('SuccessFul login for' + response.name);
-        })
-    }else {
-        FB.login(function (response){
-            console.log(response)
-        },{
-            scope:'email',
-            return_scopes: true 
-
-        })
-    }
-}
-        window.fbAsyncInit = function () {
-            FB.init({
-                appId: '993599697939474',
-                cookie: true,
-                xfbml: true,
-                version: 'v13.0'
-            });
-
-            FB.AppEvents.logPageView();
-            FB.getLoginStatus(function (response) {
-                statusChangeCallback(response);
+        FB.api('/me/feed', 'post', { body: body, message: 'My message is ...' }, function(response) {
+          if (!response || response.error) {
+            alert('Error occured');
+          } else {
+            alert('Post ID: ' + response);
+          }
         });
-        };
-
-      
-
-        (function (d, s, id) {
-            var js, fjs = d.getElementsByTagName(s)[0];
-            if (d.getElementById(id)) { return; }
-            js = d.createElement(s); js.id = id;
-            js.src = "https://connect.facebook.net/en_US/sdk.js";
-            fjs.parentNode.insertBefore(js, fjs);
-        }(document, 'script', 'facebook-jssdk'));
-
-
-
-        function checkLoginState() {
-            
-        }
-        function getConnetion() {
-            
-        }
-
-        document.getElementById('share-button').addEventListener('click', function () {
-            FB.ui({
-                method: 'share',
-                href: 'https://veneury.github.io/facebookconect.github.io/'
-            }, function (response) {
-                console.log(response);
-            })
-        })
-
-        document.getElementById('getconexion-button').addEventListener('click', function () {
-            FB.getLoginStatus(function (response) {
-                statusChangeCallback(response);
-            });
-        })
-
-        document.getElementById('conexion-button').addEventListener('click', function () {
-            FB.getLoginStatus(function (response) {
-                statusChangeCallback(response);
-            });
-        })
-        document.getElementById('publish-button').addEventListener('click', function () {
-            FB.getLoginStatus(function (response) {
-                console.log(response)
-                    var body = 'Reading JS SDK documentation';
-                    FB.api('/me/feed', 'post', { message: body }, function(response) {
-                    if (!response || response.error) {
-                        alert('Error occured');
-                    } else {
-                        alert('Post ID: ' + response.id);
-                    }
-                    });
-                
-            });
-        })
-
-        function publishStory() {
-  FB.ui({
-    method: 'feed',
-    name: 'message name',
-    caption: 'message caption ',
-    description: 'description goes here',
-    link: 'the url current page',
-    picture: 'https://tpc.googlesyndication.com/simgad/15370925399314456202'
-  }, 
-  function(response) {
-    console.log('publishStory response: ', response);
-  });
-  return false;
-}
+    }
     </script>
-</body>
 
-</html>
+    <div id="fb-root"></div>
+    <script>
+      window.fbAsyncInit = function() {
+        FB.init({
+          appId  : '993599697939474',
+          status : true, // check login status
+          cookie : true, // enable cookies to allow the server to access the session
+          xfbml  : true  // parse XFBML
+        });
+      };
+
+      (function() {
+        var e = document.createElement('script');
+        e.src = document.location.protocol + '//connect.facebook.net/en_US/all.js';
+        e.async = true;
+        document.getElementById('fb-root').appendChild(e);
+      }());
+    </script>
+
+    </body>
+    </html>
