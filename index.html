@@ -24,6 +24,28 @@
         src="https://connect.facebook.net/es_LA/sdk.js#xfbml=1&version=v13.0&appId=993599697939474&autoLogAppEvents=1"
         nonce="ktv8AxRj"></script>
     <script>
+
+
+
+function statusChangeCallback(response){
+    console.log('Running StatusChange');
+    console.log(response,'Running StatusChange');
+
+    if(response.status == 'connected'){
+        alert('Conectado');
+        FB.api('/me', function(response){
+            console.log('SuccessFul login for' + respose.name);
+        })
+    }else {
+        FB.login(function (respose){
+            console.log(respose)
+        },{
+            scope:'email',
+            return_scopes: true 
+
+        })
+    }
+}
         window.fbAsyncInit = function () {
             FB.init({
                 appId: '993599697939474',
@@ -35,6 +57,11 @@
             FB.AppEvents.logPageView();
 
         };
+
+        FB.getLoginStatus(function (response) {
+                statusChangeCallback(response);
+        });
+
         (function (d, s, id) {
             var js, fjs = d.getElementsByTagName(s)[0];
             if (d.getElementById(id)) { return; }
@@ -46,14 +73,10 @@
 
 
         function checkLoginState() {
-            FB.getLoginStatus(function (response) {
-                statusChangeCallback(response);
-            });
+            
         }
         function getConnetion() {
-            FB.getLoginStatus(function (response) {
-                statusChangeCallback(response);
-            });
+            
         }
 
         document.getElementById('share-button').addEventListener('click', function () {
