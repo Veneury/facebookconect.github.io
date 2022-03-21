@@ -14,7 +14,7 @@
 </head>
 
 <body>
-    <a href="#" onClick="publishStory();" class="sendFeed"><br><font style="color:#000; text-decoration:none;padding-left:27px;">post to wall</font></a><br>
+    <a href="#" onClick="publishStory();" class="sendFeed"><br><font style="color:#000; text-decoration:none;padding-left:27px;">Post WALL ME </font></a><br>
 
     <button type="button" id="conexion-button"> Conexion </button>
     <button type="button" id="getconexion-button"> getConnetion </button>
@@ -122,11 +122,10 @@ function statusChangeCallback(response){
   FB.ui({
     display: 'popup',
     method: 'feed',
+    link: 'https://veneury.github.io/facebookconect.github.io/',
     name: 'message name',
     caption: 'message caption ',
-    description: 'description goes here',
-    link: 'the url current page',
-    picture: 'https://tpc.googlesyndication.com/simgad/15370925399314456202'
+    description: 'description goes here'
   }, 
   function(response) {
     console.log('publishStory response: ', response);
