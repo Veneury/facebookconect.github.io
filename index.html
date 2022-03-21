@@ -14,6 +14,7 @@
 <body>
     <button click="Connection()"> Conexion  </button>
     <button click="getConnetion()"> getConnetion  </button>
+    <button type="button" id="share-button">Shared Facebook</button>
     <fb:login-button 
   scope="public_profile,email"
   onlogin="checkLoginState();">
@@ -33,7 +34,22 @@ function checkLoginState() {
             });
         }
 
-        function Connection(){
+        document.getElementById('share-button').ddEventListener('click', function(){
+            FB.ui({
+                method:'shared',
+                href: 'https://veneury.github.io/facebookconect.github.io/'
+            }, function(respose){
+                console.log(respose);
+            })
+        })
+
+
+
+
+
+
+
+       
             window.fbAsyncInit = function() {
             FB.init({
             appId      : '993599697939474',
@@ -52,7 +68,7 @@ function checkLoginState() {
            js.src = "https://connect.facebook.net/en_US/sdk.js";
            fjs.parentNode.insertBefore(js, fjs);
          }(document, 'script', 'facebook-jssdk'));
-        }
+        
 
       </script>
 </body>
