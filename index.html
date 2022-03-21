@@ -1,75 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta property="og:url"           content="https://www.your-domain.com/your-page.html" />
-<meta property="og:type"          content="website" />
-<meta property="og:title"         content="Your Website Title" />
-<meta property="og:description"   content="Your description" />
-<meta property="og:image"         content="https://www.your-domain.com/path/image.jpg" />
+    <meta property="og:url" content="https://www.your-domain.com/your-page.html" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Your Website Title" />
+    <meta property="og:description" content="Your description" />
+    <meta property="og:image" content="https://www.your-domain.com/path/image.jpg" />
     <title>FACEBOOK LOGIN</title>
 </head>
+
 <body>
-    <button click="Connection()"> Conexion  </button>
-    <button click="getConnetion()"> getConnetion  </button>
+    <button click="Connection()"> Conexion </button>
+    <button click="getConnetion()"> getConnetion </button>
     <button type="button" id="share-button">Shared Facebook</button>
-    <fb:login-button 
-  scope="public_profile,email"
-  onlogin="checkLoginState();">
-</fb:login-button>
-<div id="fb-root"></div>
-<script async defer crossorigin="anonymous" src="https://connect.facebook.net/es_LA/sdk.js#xfbml=1&version=v13.0&appId=993599697939474&autoLogAppEvents=1" nonce="ktv8AxRj"></script>
+    <fb:login-button scope="public_profile,email" onlogin="checkLoginState();">
+    </fb:login-button>
+    <div id="fb-root"></div>
+    <script async defer crossorigin="anonymous"
+        src="https://connect.facebook.net/es_LA/sdk.js#xfbml=1&version=v13.0&appId=993599697939474&autoLogAppEvents=1"
+        nonce="ktv8AxRj"></script>
     <script>
-        
-function checkLoginState() {
-  FB.getLoginStatus(function(response) {
-    statusChangeCallback(response);
-  });
-}
-        function getConnetion(){
-            FB.getLoginStatus(function(response) {
-            statusChangeCallback(response);
+        window.fbAsyncInit = function () {
+            FB.init({
+                appId: '993599697939474',
+                cookie: true,
+                xfbml: true,
+                version: 'v13.0'
+            });
+
+            FB.AppEvents.logPageView();
+
+        };
+        (function (d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) { return; }
+            js = d.createElement(s); js.id = id;
+            js.src = "https://connect.facebook.net/en_US/sdk.js";
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
+
+
+
+        function checkLoginState() {
+            FB.getLoginStatus(function (response) {
+                statusChangeCallback(response);
+            });
+        }
+        function getConnetion() {
+            FB.getLoginStatus(function (response) {
+                statusChangeCallback(response);
             });
         }
 
-        document.getElementById('share-button').ddEventListener('click', function(){
+        document.getElementById('share-button').ddEventListener('click', function () {
             FB.ui({
-                method:'shared',
+                method: 'share',
                 href: 'https://veneury.github.io/facebookconect.github.io/'
-            }, function(respose){
+            }, function (respose) {
                 console.log(respose);
             })
         })
-
-
-
-
-
-
-
-       
-            window.fbAsyncInit = function() {
-            FB.init({
-            appId      : '993599697939474',
-            cookie     : true,
-            xfbml      : true,
-            version    : 'v13.0'
-            });
-            
-            FB.AppEvents.logPageView();   
-            
-        };
-        (function(d, s, id){
-           var js, fjs = d.getElementsByTagName(s)[0];
-           if (d.getElementById(id)) {return;}
-           js = d.createElement(s); js.id = id;
-           js.src = "https://connect.facebook.net/en_US/sdk.js";
-           fjs.parentNode.insertBefore(js, fjs);
-         }(document, 'script', 'facebook-jssdk'));
-        
-
-      </script>
+    </script>
 </body>
+
 </html>
