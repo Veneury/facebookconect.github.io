@@ -17,6 +17,7 @@
     <button type="button" id="conexion-button"> Conexion </button>
     <button type="button" id="getconexion-button"> getConnetion </button>
     <button type="button" id="share-button">Shared Facebook</button>
+    <button type="button" id="share-button">HORA</button>
     <fb:login-button scope="public_profile,email" onlogin="checkLoginState();">
     </fb:login-button>
     <div id="fb-root"></div>
@@ -55,12 +56,12 @@ function statusChangeCallback(response){
             });
 
             FB.AppEvents.logPageView();
-
-        };
-
-        FB.getLoginStatus(function (response) {
+            FB.getLoginStatus(function (response) {
                 statusChangeCallback(response);
         });
+        };
+
+      
 
         (function (d, s, id) {
             var js, fjs = d.getElementsByTagName(s)[0];
